@@ -1,1 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
+<title>Bharatpur Bird Photography | Rainbow Adventures</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background: #080a08;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+}
+
+header {
+  text-align: center;
+  padding: 35px 15px 25px;
+  background: #101510;
+}
+
+header h1 {
+  margin: 0 0 10px;
+  color: #e7c66b;
+  font-size: clamp(23px, 4vw, 36px);
+  letter-spacing: 1px;
+}
+
+header h2 {
+  font-size: 17px;
+  font-weight: normal;
+  color: #e5e5e5;
+}
+
+header p {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.gallery {
+  max-width: 1400px;
+  margin: auto;
+  padding: 22px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.photo {
+  background: #171b17;
+  border-radius: 9px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s ease;
+}
+
+.photo:hover {
+  transform: translateY(-4px);
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  height: 245px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.photo:hover img {
+  transform: scale(1.04);
+}
+
+.caption {
+  padding: 12px;
+  text-align: center;
+  color: #ddd;
+  font-size: 14px;
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.97);
+}
+
+.lightbox.active {
+  display: flex;
+}
+
+.lightbox-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 55px 55px 30px;
+}
+
+.lightbox img {
+  max-width: 100%;
+  max-height: 75vh;
+  object-fit: contain;
+}
+
+.lightbox-caption {
+  margin-top: 15px;
+  text-align: center;
+  color: #e7c66b;
+  font-size: 16px;
+}
+
+.counter {
+  margin-top: 8px;
+  color: #aaa;
+  font-size: 13px;
+}
+
+.control {
+  position: absolute;
+  border: none;
+  background: rgba(35,35,35,0.8);
+  color: white;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 28px;
+}
+
+.control:hover {
+  background: #a88739;
+}
+
+.close {
+  top: 15px;
+  right: 20px;
+}
+
+.prev {
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.next {
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+footer {
+  text-align: center;
+  padding: 22px 10px;
+  color: #aaa;
+  background: #101510;
+  font-size: 13px;
+}
+
+footer strong {
+  color: #e7c66b;
+}
+
+@media (max-width: 850px) {
+  .gallery {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .photo img {
+    height: 190px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .photo img {
+    height: 135px;
+  }
+
+  .caption {
+    font-size: 12px;
+    padding: 8px 4px;
+  }
+
+  .lightbox-content {
+    padding: 55px 12px;
+  }
+
+  .control {
+    width: 38px;
+    height: 38px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>BHARATPUR BIRD PHOTOGRAPHY</h1>
+  <h2>Keoladeo National Park</h2>
+  <p>Explore. Experience. Learn. Conserve.</p>
+</header>
+
+<main>
+  <div class="gallery" id="gallery"></div>
+</main>
+
+<div class="lightbox" id="lightbox"
+     role="dialog"
+     aria-modal="true"
+     aria-label="Photo viewer">
+
+  <button class="control close"
+          onclick="closeLightbox()"
+          aria-label="Close">×</button>
+
+  <button class="control prev"
+          onclick="changePhoto(-1)"
+          aria-label="Previous photo">❮</button>
+
+  <div class="lightbox-content">
+    <img id="largeImage" alt="">
+    <div class="lightbox-caption"
+         id="lightboxCaption"></div>
+    <div class="counter" id="counter"></div>
+  </div>
+
+  <button class="control next"
+          onclick="changePhoto(1)"
+          aria-label="Next photo">❯</button>
+</div>
+
+<footer>
+  <strong>RAINBOW ADVENTURES</strong>
+  <p>25 Years of Wildlife Experience</p>
+  <p>Wildlife • Birdwatching • Photography</p>
+</footer>
+
+<script>
+const photos = [
+  { src: "bird01.jpg", name: "Bharatpur Bird 01" },
+  { src: "bird02.jpg", name: "Bharatpur Bird 02" },
+  { src: "bird03.jpg", name: "Bharatpur Bird 03" },
+  { src: "bird04.jpg", name: "Bharatpur Bird 04" },
+  { src: "bird05.jpg", name: "Bharatpur Bird 05" },
+  { src: "bird06.jpg", name: "Bharatpur Bird 06" }
+];
+
+const gallery = document.getElementById("gallery");
+const lightbox = document.getElementById("lightbox");
+const largeImage = document.getElementById("largeImage");
+const lightboxCaption =
+  document.getElementById("lightboxCaption");
+const counter = document.getElementById("counter");
+
+let currentIndex = 0;
+let touchStartX = 0;
+let previousFocus = null;
+
+// Build thumbnails
+photos.forEach((photo, index) => {
+  const item = document.createElement("div");
+  item.className = "photo";
+  item.tabIndex = 0;
+  item.setAttribute("role", "button");
+  item.setAttribute("aria-label", "View " + photo.name);
+
+  const img = document.createElement("img");
+  img.src = photo.src;
+  img.alt = photo.name;
+  img.loading = "lazy";
+
+  const caption = document.createElement("div");
+  caption.className = "caption";
+  caption.textContent = photo.name;
+
+  item.appendChild(img);
+  item.appendChild(caption);
+  gallery.appendChild(item);
+
+  item.addEventListener("click", () => openLightbox(index));
+
+  item.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      openLightbox(index);
+    }
+  });
+});
+
+function openLightbox(index) {
+  previousFocus = document.activeElement;
+  currentIndex = index;
+  updateLightbox();
+  lightbox.classList.add("active");
+  document.body.style.overflow = "hidden";
+  document.querySelector(".close").focus();
+}
+
+function updateLightbox() {
+  const photo = photos[currentIndex];
+  largeImage.src = photo.src;
+  largeImage.alt = photo.name;
+  lightboxCaption.textContent = photo.name;
+  counter.textContent =
+    (currentIndex + 1) + " / " + photos.length;
+}
+
+function changePhoto(direction) {
+  currentIndex =
+    (currentIndex + direction + photos.length)
+    % photos.length;
+  updateLightbox();
+}
+
+function closeLightbox() {
+  lightbox.classList.remove("active");
+  document.body.style.overflow = "";
+  if (previousFocus) previousFocus.focus();
+}
+
+// Keyboard navigation
+document.addEventListener("keydown", e => {
+  if (!lightbox.classList.contains("active")) return;
+
+  if (e.key === "Escape") closeLightbox();
+  if (e.key === "ArrowRight") changePhoto(1);
+  if (e.key === "ArrowLeft") changePhoto(-1);
+
+  if (e.key === "Tab") {
+    const controls = [...lightbox.querySelectorAll("button")];
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey &&
+               document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+});
+
+// Close by clicking dark background
+lightbox.addEventListener("click", e => {
+  if (e.target === lightbox) closeLightbox();
+});
+
+// Mobile swipe
+lightbox.addEventListener("touchstart", e => {
+  touchStartX = e.changedTouches[0].screenX;
+}, { passive: true });
+
+lightbox.addEventListener("touchend", e => {
+  const touchEndX = e.changedTouches[0].screenX;
+  const difference = touchEndX - touchStartX;
+
+  if (Math.abs(difference) > 50) {
+    changePhoto(difference < 0 ? 1 : -1);
+  }
+}, { passive: true });
+
+</script>
+</body>
+</html>
